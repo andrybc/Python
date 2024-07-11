@@ -3,6 +3,15 @@ import tkinter as tk
 from tkinter import messagebox
 from PIL import Image, ImageTk
 import io
+from dotenv import load_dotenv
+import os
+
+
+load_dotenv()
+
+apiKey = os.getenv("OPENWEATHER_API_KEY")
+if not apiKey:
+    raise ValueError("No API key found. Please set OPENWEather_API_KEY in .env file")
 
 #create the main window
 root = tk.Tk()
@@ -27,7 +36,6 @@ weather_label.pack()
 
 def get_weather():
     city = city_entry.get()
-    apiKey = ""
     url = f"https://api.openweathermap.org/data/2.5/weather?q={city}&appid={apiKey}&units=imperial"
     
     try:
