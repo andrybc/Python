@@ -26,7 +26,7 @@ def parse_argument(arg, expected_type, array_element_type=None):
         elif expected_type == "bool":
             return arg.lower() == "true"
         elif expected_type == "str":
-            return arg
+            return arg.strip('"').strip("'")
 
         elif expected_type == "array":
             values = ast.literal_eval(arg)
@@ -119,14 +119,26 @@ def get_parameters():
 def run_solution(solution_name, method_name, *args):
     """Run the solution's method with the provided arguments."""
     try:
+        # Dynamically import the selected solution module
         module = importlib.import_module(f'solutions.{solution_name}')
         solution = module.Solution()
         
+        # Check if the method exists in the Solution class
         if not hasattr(solution, method_name):
             print(f"Error: Method '{method_name}' not found in '{solution_name}.py'.")
             return
         
+        # Get the method and its signature
         method = getattr(solution, method_name)
+        sig = inspect.signature(method)
+        expected_args_count = len(sig.parameters)
+
+        # Check if provided arguments count matches the expected count
+        if len(args) != expected_args_count:
+            print(f"Error: Method '{method_name}' expects {expected_args_count} arguments, but {len(args)} were provided.")
+            return
+        
+        # Run the method with the provided arguments
         result = method(*args)
         
         # Format and print the result based on its data structure
@@ -148,7 +160,7 @@ def main():
         return
 
     method_name = input("Enter the method name to run (e.g., addTwoNumbers): ")
-
+   # print(f"Arguments for '{method_name}': {args} (types: {[type(arg) for arg in args]})")
     param_types, element_types = get_parameters()
 
     while True:
@@ -159,9 +171,11 @@ def main():
                     element_type = element_types[i]
                     arg = input(f"Enter the {param_type} of {element_type}s: ")
                     parsed_arg = parse_argument(arg, param_type, element_type)
+                    print(f"Parsed argument: {parsed_arg} (type: {type(parsed_arg)})")
                 else:
                     arg = input(f"Enter the {param_type} argument: ")
                     parsed_arg = parse_argument(arg, param_type)
+                    print(f"Parsed argument: {parsed_arg} (type: {type(parsed_arg)})")
                 args.append(parsed_arg)
             
             run_solution(solution_name, method_name, *args)
